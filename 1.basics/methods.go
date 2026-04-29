@@ -2,21 +2,21 @@ package main
 
 import "fmt"
 
-type rect struct {
+type methodsRect struct {
 	width, height int
 }
 
 // use a pointer receiver type to avoid copying on method calls or to allow the method to mutate the struct
-func (r *rect) area() int {
+func (r *methodsRect) area() int {
 	return r.width * r.height
 }
 
-func (r rect) perim() int {
+func (r methodsRect) perim() int {
 	return 2*r.width + 2*r.height
 }
 
 func main() {
-	r := rect{width: 10, height: 5}
+	r := methodsRect{width: 10, height: 5}
 
 	fmt.Println("area: ", r.area())
 	fmt.Println("perim:", r.perim())

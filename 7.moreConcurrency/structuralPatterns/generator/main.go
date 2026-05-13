@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-func generator(msg string) <-chan string {
+func gen(msg string) <-chan string {
 	c := make(chan string)
 	go func() {
 		defer close(c)
@@ -14,8 +14,8 @@ func generator(msg string) <-chan string {
 }
 
 func main() {
-	g1 := generator("hello")
-	g2 := generator("world")
+	g1 := gen("hello")
+	g2 := gen("world")
 
 	for i := 0; i < 10; i++ {
 		fmt.Println(<-g1)

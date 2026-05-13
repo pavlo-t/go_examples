@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func pipelineGen(nums ...int) <-chan int {
+func gen(nums ...int) <-chan int {
 	out := make(chan int)
 	go func() {
 		for _, n := range nums {
@@ -17,7 +17,7 @@ func pipelineGen(nums ...int) <-chan int {
 	return out
 }
 
-func pipelineSq(in <-chan int) <-chan int {
+func sq(in <-chan int) <-chan int {
 	out := make(chan int)
 	go func() {
 		for n := range in {
@@ -28,7 +28,7 @@ func pipelineSq(in <-chan int) <-chan int {
 	return out
 }
 
-func pipelineDouble(in <-chan int) <-chan int {
+func double(in <-chan int) <-chan int {
 	out := make(chan int)
 	go func() {
 		for n := range in {
@@ -51,8 +51,8 @@ func mapC[T, U any](fn func(T) U, in <-chan T) <-chan U {
 }
 
 func main() {
-	c := pipelineGen(1, 2, 3)
-	out := pipelineSq(c)
+	c := gen(1, 2, 3)
+	out := sq(c)
 
 	fmt.Println(<-out)
 	fmt.Println(<-out)
@@ -60,36 +60,24 @@ func main() {
 	fmt.Println("========================================")
 
 	// We can compose it any way we want:
-	for n := range pipelineSq(pipelineSq(pipelineGen(1, 2, 3))) {
+	for n := range sq(sq(gen(1, 2, 3))) {
 		fmt.Println(n)
 	}
 	fmt.Println("========================================")
-	for n := range pipelineSq(pipelineDouble(pipelineGen(1, 2, 3))) {
+	for n := range sq(double(gen(1, 2, 3))) {
 		fmt.Println(n)
 	}
 	fmt.Println("========================================")
-	for n := range pipelineDouble(pipelineSq(pipelineGen(1, 2, 3))) {
+	for n := range double(sq(gen(1, 2, 3))) {
 		fmt.Println(n)
 	}
 
 	fmt.Println("========================================")
-	sq := func(i int) int {
-		return i * i
-	}
-	mul := func(i int) func(int) int {
-		return func(j int) int {
-			return i * j
-		}
-	}
-	stringify := func(i int) string {
-		return strconv.Itoa(i)
-	}
-	repeat := func(i int) func(string) string {
-		return func(s string) string {
-			return strings.Repeat(s, i)
-		}
-	}
-	for n := range mapC(repeat(3), mapC(stringify, mapC(sq, mapC(mul(3), pipelineGen(1, 2, 3))))) {
+	sq := func(i int) int { return i * i }
+	mul := func(i int) func(int) int { return func(j int) int { return i * j } }
+	stringify := func(i int) string { return strconv.Itoa(i) }
+	repeat := func(i int) func(string) string { return func(s string) string { return strings.Repeat(s, i) } }
+	for n := range mapC(repeat(3), mapC(stringify, mapC(sq, mapC(mul(3), gen(1, 2, 3))))) {
 		fmt.Println(n)
 	}
 }

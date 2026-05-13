@@ -5,7 +5,7 @@ import (
 	"sync"
 )
 
-func fanOutGen(nums ...int) <-chan int {
+func gen(nums ...int) <-chan int {
 	out := make(chan int)
 	go func() {
 		for _, n := range nums {
@@ -16,7 +16,7 @@ func fanOutGen(nums ...int) <-chan int {
 	return out
 }
 
-func fanOutSq(in <-chan int) <-chan int {
+func sq(in <-chan int) <-chan int {
 	out := make(chan int)
 	go func() {
 		for n := range in {
@@ -27,7 +27,7 @@ func fanOutSq(in <-chan int) <-chan int {
 	return out
 }
 
-func fanOutMerge(cs ...<-chan int) <-chan int {
+func merge(cs ...<-chan int) <-chan int {
 	var wg sync.WaitGroup
 	out := make(chan int)
 
@@ -50,14 +50,14 @@ func fanOutMerge(cs ...<-chan int) <-chan int {
 }
 
 func main() {
-	in := fanOutGen(1, 2, 3, 4, 5)
+	in := gen(1, 2, 3, 4, 5)
 
 	// Distribute sq work across 2 goroutines (fan-out)
-	c1 := fanOutSq(in)
-	c2 := fanOutSq(in)
+	c1 := sq(in)
+	c2 := sq(in)
 
 	// merge channels back into one channel (fan-in)
-	for n := range fanOutMerge(c1, c2) {
+	for n := range merge(c1, c2) {
 		fmt.Println(n)
 	}
 }

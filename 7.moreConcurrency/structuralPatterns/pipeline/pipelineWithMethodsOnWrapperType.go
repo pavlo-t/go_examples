@@ -4,9 +4,9 @@ import (
 	"fmt"
 )
 
-type pipelineChan[T any] <-chan T
+type RcvChan[T any] <-chan T
 
-func newPipelineChan[T any](els ...T) pipelineChan[T] {
+func newRcvChan[T any](els ...T) RcvChan[T] {
 	out := make(chan T)
 	go func() {
 		for _, n := range els {
@@ -17,14 +17,14 @@ func newPipelineChan[T any](els ...T) pipelineChan[T] {
 	return out
 }
 
-type pipelineChanOfInt pipelineChan[int]
+type RcvChanInt RcvChan[int]
 
-func newPipelineChanOfInt(nums ...int) pipelineChanOfInt {
-	c := newPipelineChan(nums...)
-	return pipelineChanOfInt(c)
+func newRcvChanInt(nums ...int) RcvChanInt {
+	c := newRcvChan(nums...)
+	return RcvChanInt(c)
 }
 
-func (in pipelineChanOfInt) sq() pipelineChanOfInt {
+func (in RcvChanInt) sq() RcvChanInt {
 	out := make(chan int)
 	go func() {
 		for n := range in {
@@ -35,7 +35,7 @@ func (in pipelineChanOfInt) sq() pipelineChanOfInt {
 	return out
 }
 
-func (in pipelineChanOfInt) add(i int) pipelineChanOfInt {
+func (in RcvChanInt) add(i int) RcvChanInt {
 	out := make(chan int)
 	go func() {
 		for n := range in {
@@ -46,7 +46,7 @@ func (in pipelineChanOfInt) add(i int) pipelineChanOfInt {
 	return out
 }
 
-func (in pipelineChanOfInt) mul(i int) pipelineChanOfInt {
+func (in RcvChanInt) mul(i int) RcvChanInt {
 	out := make(chan int)
 	go func() {
 		for n := range in {
@@ -58,7 +58,7 @@ func (in pipelineChanOfInt) mul(i int) pipelineChanOfInt {
 }
 
 func main() {
-	c := newPipelineChanOfInt(1, 2, 3)
+	c := newRcvChanInt(1, 2, 3)
 	out := c.sq()
 
 	fmt.Println(<-out)
@@ -67,15 +67,15 @@ func main() {
 	fmt.Println("========================================")
 
 	// We can compose it any way we want:
-	for n := range newPipelineChanOfInt(1, 2, 3).sq().sq() {
+	for n := range newRcvChanInt(1, 2, 3).sq().sq() {
 		fmt.Println(n)
 	}
 	fmt.Println("========================================")
-	for n := range newPipelineChanOfInt(1, 2, 3).sq().mul(2).add(1) {
+	for n := range newRcvChanInt(1, 2, 3).sq().mul(2).add(1) {
 		fmt.Println(n)
 	}
 	fmt.Println("========================================")
-	for n := range newPipelineChanOfInt(1, 2, 3).add(1).mul(2).sq() {
+	for n := range newRcvChanInt(1, 2, 3).add(1).mul(2).sq() {
 		fmt.Println(n)
 	}
 }

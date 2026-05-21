@@ -1,8 +1,9 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"sync"
+	"time"
 )
 
 func merge(done <-chan struct{}, cs ...<-chan int) <-chan int {
@@ -14,7 +15,9 @@ func merge(done <-chan struct{}, cs ...<-chan int) <-chan int {
 		for n := range c {
 			select {
 			case out <- n:
+				log.Println("merge sent:", n)
 			case <-done:
+				log.Println("merge stopped")
 				return
 			}
 		}
@@ -37,7 +40,9 @@ func gen(done <-chan struct{}, nums ...int) <-chan int {
 		for _, n := range nums {
 			select {
 			case out <- n:
+				log.Println("gen sent:", n)
 			case <-done:
+				log.Println("gen stopped")
 				return
 			}
 		}
@@ -53,7 +58,9 @@ func sq(done <-chan struct{}, in <-chan int) <-chan int {
 		for n := range in {
 			select {
 			case out <- n * n:
+				log.Println("sq sent:", n*n)
 			case <-done:
+				log.Println("sq stopped")
 				return
 			}
 		}
@@ -62,16 +69,23 @@ func sq(done <-chan struct{}, in <-chan int) <-chan int {
 }
 
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
+	// sleep after closing to see messages from stages
+	defer func() {
+		log.Println("main sleeping in defer")
+		time.Sleep(200 * time.Millisecond)
+	}()
 	done := make(chan struct{})
 	defer close(done)
 
-	in := gen(done, 2, 3, 4, 5)
+	in := gen(done, 1, 2, 3, 4, 5, 6, 7)
 
-	// Distribute the sq work across two goroutines that both read from in.
+	// Distribute the sq work across multiple goroutines that all read from in.
 	c1 := sq(done, in)
 	c2 := sq(done, in)
+	c3 := sq(done, in)
 
 	// Consume the first value from output.
-	out := merge(done, c1, c2)
-	fmt.Println(<-out) // 4 or 9
+	out := merge(done, c1, c2, c3)
+	log.Println("main received:", <-out) // 1 or 4 or 9
 }

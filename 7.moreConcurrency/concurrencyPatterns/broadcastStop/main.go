@@ -5,21 +5,6 @@ import (
 	"sync"
 )
 
-func main() {
-	done := make(chan struct{})
-	defer close(done)
-
-	in := gen(done, 2, 3, 4, 5)
-
-	// Distribute the sq work across two goroutines that both read from in.
-	c1 := sq(done, in)
-	c2 := sq(done, in)
-
-	// Consume the first value from output.
-	out := merge(done, c1, c2)
-	fmt.Println(<-out) // 4 or 9
-}
-
 func merge(done <-chan struct{}, cs ...<-chan int) <-chan int {
 	var wg sync.WaitGroup
 	out := make(chan int)
@@ -74,4 +59,19 @@ func sq(done <-chan struct{}, in <-chan int) <-chan int {
 		}
 	}()
 	return out
+}
+
+func main() {
+	done := make(chan struct{})
+	defer close(done)
+
+	in := gen(done, 2, 3, 4, 5)
+
+	// Distribute the sq work across two goroutines that both read from in.
+	c1 := sq(done, in)
+	c2 := sq(done, in)
+
+	// Consume the first value from output.
+	out := merge(done, c1, c2)
+	fmt.Println(<-out) // 4 or 9
 }

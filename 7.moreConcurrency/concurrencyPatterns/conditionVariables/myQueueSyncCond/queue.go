@@ -1,4 +1,4 @@
-package myQueue
+package myQueueSyncCond
 
 import "sync"
 
@@ -26,10 +26,23 @@ func (q *Queue[T]) Get() T {
 	return item
 }
 
+func (q *Queue[T]) GetMany(n int) []T {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+	for len(q.items) < n {
+		q.itemAdded.Wait()
+	}
+	items := q.items[:n:n]
+	q.items = q.items[n:]
+	return items
+}
+
 func (q *Queue[T]) Push(item T) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 	q.items = append(q.items, item)
-	// Signal relocks the waited mutex and proceeds with execution
-	q.itemAdded.Signal()
+	// Signal wakes one waiting goroutine if any
+	//q.itemAdded.Signal()
+	// Broadcast wakes all waiting goroutines
+	q.itemAdded.Broadcast()
 }

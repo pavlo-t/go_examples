@@ -55,4 +55,18 @@ func main() {
 		}
 	}
 	fmt.Println("2d: ", twoD)
+
+	fmt.Println("================================================================================")
+	s1 := []int{1, 2, 3, 4}
+	s2 := s1[:2]   // create new slice with len 2 and capacity as the original (5)
+	s3 := s1[:2:2] // create new slice with len 2 and capacity 2
+	fmt.Println("s1:", s1, "s2:", s2, "s3:", s3)
+	s3[1] = 5 // mutates s3 and s1 and s2, they all use the same underlying array
+	fmt.Println("s1:", s1, "s2:", s2, "s3:", s3)
+	s3 = append(s3, 6) // allocates new array, doesn't mutate s1 and s2
+	fmt.Println("s1:", s1, "s2:", s2, "s3:", s3)
+	s2 = append(s2, 7) // mutates both s2 and s1
+	fmt.Println("s1:", s1, "s2:", s2, "s3:", s3)
+	s1[1] = 8 // mutates both s1 and s2
+	fmt.Println("s1:", s1, "s2:", s2, "s3:", s3)
 }

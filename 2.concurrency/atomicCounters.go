@@ -24,4 +24,12 @@ func main() {
 
 	fmt.Println("ops:", ops.Load())
 	fmt.Println("i:", i)
+
+	old := ops.Swap(42)
+	fmt.Printf("ops after swap: %d, old: %d\n", ops.Load(), old)
+
+	swapped := ops.CompareAndSwap(41, 23)
+	fmt.Println("swapped:", swapped)
+	swapped = ops.CompareAndSwap(42, 23)
+	fmt.Println("swapped:", swapped)
 }

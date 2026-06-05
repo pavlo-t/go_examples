@@ -14,6 +14,16 @@ package main
 // BenchmarkGoodStruct-8               7201            146399 ns/op         1605638 B/op          1 allocs/op
 // BenchmarkGoodStruct-8               8566            132990 ns/op         1605639 B/op          1 allocs/op
 // BenchmarkGoodStruct-8               8626            135354 ns/op         1605639 B/op          1 allocs/op
+// BenchmarkBadStructNoAlloc-8        16227             73360 ns/op             147 B/op          0 allocs/op
+// BenchmarkBadStructNoAlloc-8        16396             72669 ns/op             146 B/op          0 allocs/op
+// BenchmarkBadStructNoAlloc-8        16567             72363 ns/op             144 B/op          0 allocs/op
+// BenchmarkBadStructNoAlloc-8        16537             72414 ns/op             145 B/op          0 allocs/op
+// BenchmarkBadStructNoAlloc-8        16376             72885 ns/op             146 B/op          0 allocs/op
+// BenchmarkGoodStructNoAlloc-8       19412             61434 ns/op              82 B/op          0 allocs/op
+// BenchmarkGoodStructNoAlloc-8       19485             62043 ns/op              82 B/op          0 allocs/op
+// BenchmarkGoodStructNoAlloc-8       19420             60199 ns/op              82 B/op          0 allocs/op
+// BenchmarkGoodStructNoAlloc-8       19279             65251 ns/op              83 B/op          0 allocs/op
+// BenchmarkGoodStructNoAlloc-8       18819             67358 ns/op              85 B/op          0 allocs/op
 // PASS
 // ok      command-line-arguments  15.834s
 import (
@@ -53,6 +63,30 @@ func BenchmarkGoodStruct(b *testing.B) {
 		s := make([]Good, 100_000)
 		for j := range s {
 			s[j].b = j
+		}
+		SinkGood = s
+	}
+}
+
+func BenchmarkBadStructNoAlloc(b *testing.B) {
+	s := make([]Bad, 100_000)
+	for i := 0; i < b.N; i++ {
+		for j := range s {
+			s[j].a = !s[j].a
+			s[j].b = j
+			s[j].c = !s[j].c
+		}
+		SinkBad = s
+	}
+}
+
+func BenchmarkGoodStructNoAlloc(b *testing.B) {
+	s := make([]Good, 100_000)
+	for i := 0; i < b.N; i++ {
+		for j := range s {
+			s[j].a = !s[j].a
+			s[j].b = j
+			s[j].c = !s[j].c
 		}
 		SinkGood = s
 	}
